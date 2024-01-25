@@ -1,9 +1,3 @@
-"""
-
-
-
-"""
-
 from ctpbee import CtpbeeApi, CtpBee
 from ctpbee.constant import *
 from ctpbee_webline import WebLine
