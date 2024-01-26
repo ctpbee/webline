@@ -5,12 +5,17 @@ from ctpbee import Tool
 from ctpbee.constant import ToolRegisterType, TickData, AccountData, OrderData, TradeData
 from ctpbee.level import tool_register
 from ctpbee_webline.route import web
+from ctpbee_webline.ext import model, jwt
+
 
 def create_app():
-
     app = Flask(__name__)
     app.register_blueprint(blueprint=web)
+    app.config.from_pyfile("env.py")
+    model.init_app(app)
+    jwt.init_app(app)
     return app
+
 
 class WebLine(Tool):
     def __init__(self, local=False, port=7960):

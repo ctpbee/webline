@@ -1,15 +1,16 @@
-from ctpbee.constant import OrderRequest, CancelRequest
-from flask import Blueprint, request
-
+from flask import Blueprint, request, jsonify
+from flask_jwt_extended import create_access_token, jwt_required, unset_jwt_cookies
 from ctpbee import current_app
 from ctpbee import dumps
-
+from ctpbee.constant import OrderRequest, CancelRequest
 from ctpbee_webline.response import Response
+from ctpbee_webline.model import Admin
 
 web = Blueprint("web_line", __name__, url_prefix="/web")
 
 
 @web.route("/contracts")
+@jwt_required()
 def find_contracts():
     """
     访问所有合约信息
@@ -19,6 +20,7 @@ def find_contracts():
 
 
 @web.route("/ticks")
+@jwt_required()
 def find_ticks():
     """
     访问一次行情
@@ -28,6 +30,7 @@ def find_ticks():
 
 
 @web.route("/orders")
+@jwt_required()
 def find_orders():
     """
     查询所有订单
@@ -38,6 +41,7 @@ def find_orders():
 
 
 @web.route("/active_orders")
+@jwt_required()
 def find_active_orders():
     """
     查询活跃订单
@@ -48,12 +52,14 @@ def find_active_orders():
 
 
 @web.route("/send")
+@jwt_required()
 def send_web_order():
     req = OrderRequest(**request.values)
     current_app.send_order(req)
 
 
 @web.route("/cancel")
+@jwt_required()
 def cancel_web_order():
     try:
         req = CancelRequest(**request.values)
@@ -61,3 +67,28 @@ def cancel_web_order():
         return Response("cancel ok").dumps()
     except Exception as e:
         return Response(msg=str(e)).dumps()
+
+
+@web.route("/login", methods=["POST"])
+def login():
+    username = request.values.get("username")
+    password = request.values.get("password")
+    print(username, password)
+    if username is None or password is None:
+        return Response(msg="请确认用户名或者密码不为空").dumps()
+    try:
+        admin = Admin.query.filter(Admin.username == username, Admin.pwd == password).first()
+        if admin:
+            return Response(msg="登录成功", data={"token": create_access_token(admin.username)}).dumps()
+        else:
+            return Response(msg="请确认用户存在或者密码正确").dumps()
+    except:
+        return Response(msg="请确认用户名或者密码不为空").dumps()
+
+
+@web.route("/logout")
+@jwt_required()
+def logout():
+    response = jsonify({"msg": "logout successful"})
+    unset_jwt_cookies(response)
+    return Response(msg="注销成功").dumps()

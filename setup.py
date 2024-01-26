@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 pkg = find_packages()
-install_requires = ["ctpbee", "flask"]
+install_requires = ["ctpbee", "flask", "click", "flask-jwt-extended", "redis", "sqlalchemy"]
 setup(
     name='ctpbee_webline',
     version='0.1',
@@ -10,5 +10,8 @@ setup(
     author_email='somewheve@gmail.com',
     url='https://www.github.com/ctpbee/webline',
     install_requires=install_requires,
-    packages=pkg
+    packages=pkg,
+    entry_points={
+        'console_scripts': ['ctpbee_webline = ctpbee_webline.cmd:cli']
+    }
 )
