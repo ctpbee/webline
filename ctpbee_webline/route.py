@@ -5,6 +5,7 @@ from ctpbee import dumps
 from ctpbee.constant import OrderRequest, CancelRequest
 from ctpbee_webline.response import Response
 from ctpbee_webline.model import Admin
+from ctpbee_webline.ext import model
 
 web = Blueprint("web_line", __name__, url_prefix="/web")
 
@@ -73,17 +74,31 @@ def cancel_web_order():
 def login():
     username = request.values.get("username")
     password = request.values.get("password")
-    print(username, password)
     if username is None or password is None:
         return Response(msg="请确认用户名或者密码不为空").dumps()
-    try:
-        admin = Admin.query.filter(Admin.username == username, Admin.pwd == password).first()
-        if admin:
-            return Response(msg="登录成功", data={"token": create_access_token(admin.username)}).dumps()
-        else:
-            return Response(msg="请确认用户存在或者密码正确").dumps()
-    except:
+    admin = Admin.query.filter(Admin.username == username, Admin.pwd == password).first()
+    if admin:
+        token = create_access_token(admin.username)
+        return Response(msg="登录成功", data={"token": token}).dumps()
+    else:
+        return Response(msg="请确认用户存在或者密码正确").dumps()
+
+
+@web.route("/change_password", methods=["POST"])
+@jwt_required()
+def change_password():
+    username = request.values.get("username")
+    password = request.values.get("password")
+    if username is None or password is None:
         return Response(msg="请确认用户名或者密码不为空").dumps()
+    admin = Admin.query.filter(Admin.username == username).first()
+    if admin:
+        admin.pwd = password
+        model.session.add(admin)
+        model.session.commit()
+        return Response(msg="登录成功", data={"token": create_access_token(admin.username)}).dumps()
+    else:
+        return Response(msg="请确认用户存在或者密码正确").dumps()
 
 
 @web.route("/logout")
