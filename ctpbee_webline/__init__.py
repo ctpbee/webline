@@ -1,11 +1,11 @@
 from threading import Thread
 
 from flask import Flask
-from ctpbee import Tool
+from ctpbee import Tool, dumps
 from ctpbee.constant import ToolRegisterType, TickData, AccountData, OrderData, TradeData
 from ctpbee.level import tool_register
 from ctpbee_webline.route import web
-from ctpbee_webline.ext import model, jwt
+from ctpbee_webline.ext import model, jwt, socketio
 
 
 def create_app():
@@ -14,6 +14,7 @@ def create_app():
     app.config.from_pyfile("env.py")
     model.init_app(app)
     jwt.init_app(app)
+    socketio.init_app(app)
     return app
 
 
@@ -32,16 +33,16 @@ class WebLine(Tool):
 
     @tool_register(ToolRegisterType.TICK)
     def on_tick(self, tick: TickData):
-        pass
+        socketio.emit("tick", dumps(tick))
 
     @tool_register(ToolRegisterType.ACCOUNT)
     def on_account(self, account: AccountData):
-        pass
+        socketio.emit("account", dumps(account))
 
     @tool_register(ToolRegisterType.ORDER)
     def on_order(self, order: OrderData):
-        pass
+        socketio.emit("order", dumps(order))
 
     @tool_register(ToolRegisterType.TRADE)
     def on_trade(self, trade: TradeData):
-        pass
+        socketio.emit("trade", dumps(trade))
