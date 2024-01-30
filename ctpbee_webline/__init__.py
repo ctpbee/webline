@@ -23,15 +23,13 @@ class WebLine(Tool):
         super().__init__("web_line")
         self.local = local
         self.port = port
-        self.flask_app = create_app()
-
         self.thread = Thread(target=self.run, daemon=True)
         self.thread.start()
 
     def run(self):
+        app = create_app()
         host = "127.0.0.1" if self.local else "0.0.0.0"
-        # self.flask_app.run(host=host, port=self.port)
-        socketio.run(self.flask_app, host=host, port=self.port)
+        socketio.run(app, host, self.port, allow_unsafe_werkzeug=True)
 
     @tool_register(ToolRegisterType.TICK)
     def on_tick(self, tick: TickData):

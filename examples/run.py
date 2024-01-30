@@ -27,6 +27,6 @@ if __name__ == '__main__':
     web_line = WebLine()
     app = CtpBee("market", __name__, refresh=True).with_tools(web_line)
     example = Line("DailyCTA")
-    app.config.from_json("config.json")
     app.add_extension(example)
+    app.config.from_json("config.json")
     app.start(log_output=True)

@@ -1,8 +1,12 @@
 from setuptools import setup, find_packages
 
 pkg = find_packages()
-install_requires = ["ctpbee", "flask", "click", "flask-jwt-extended", "redis", "sqlalchemy", "flask-socketio",
-                    "gevent-websocket"]
+install_requires = ["ctpbee", "flask", "click", "redis", "sqlalchemy",
+                    "flask-socketio",
+                    "flask-jwt-extended",
+                    "flask_sqlalchemy",
+                    ]
+
 setup(
     name='ctpbee_webline',
     version='0.1',
