@@ -7,6 +7,7 @@ class Line(CtpbeeApi):
     def __init__(self, name):
         super().__init__(name)
         self.init = False
+        self.instrument_set = ["rb2405", "ag2406", "hc2405"]
 
     def on_tick(self, tick: TickData) -> None:
         pass
@@ -15,7 +16,7 @@ class Line(CtpbeeApi):
         pass
 
     def on_contract(self, contract: ContractData):
-        if contract.symbol == "rb2405":
+        if contract.symbol in self.instrument_set:
             self.action.subscribe(contract.local_symbol)
 
     def on_init(self, init: bool):
