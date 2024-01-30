@@ -6,7 +6,7 @@ from ctpbee.constant import OrderRequest, CancelRequest
 from ctpbee_webline.response import Response
 from ctpbee_webline.model import Admin
 from ctpbee_webline.ext import model
-
+from ctpbee_webline.util import encrypt
 web = Blueprint("web_line", __name__, url_prefix="/web")
 
 
@@ -72,11 +72,12 @@ def cancel_web_order():
 
 @web.route("/login", methods=["POST"])
 def login():
-    username = request.values.get("username")
-    password = request.values.get("password")
+    req = request.get_json()
+    username = req.get("username")
+    password = req.get("password")
     if username is None or password is None:
         return Response(msg="请确认用户名或者密码不为空").dumps()
-    admin = Admin.query.filter(Admin.username == username, Admin.pwd == password).first()
+    admin = Admin.query.filter(Admin.username == username, Admin.pwd == encrypt(password)).first()
     if admin:
         token = create_access_token(admin.username)
         return Response(msg="登录成功", data={"token": token}).dumps()
