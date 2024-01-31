@@ -3,10 +3,11 @@ from flask_jwt_extended import create_access_token, jwt_required, unset_jwt_cook
 from ctpbee import current_app
 from ctpbee import dumps
 from ctpbee.constant import OrderRequest, CancelRequest
-from ctpbee_webline.response import Response
+from ctpbee_webline.response import Success, Fail
 from ctpbee_webline.model import Admin
 from ctpbee_webline.ext import model
 from ctpbee_webline.util import encrypt
+
 web = Blueprint("web_line", __name__, url_prefix="/web")
 
 
@@ -17,7 +18,7 @@ def find_contracts():
     访问所有合约信息
     """
     contracts = dumps(current_app.recorder.get_all_contracts())
-    return Response(data=contracts).dumps()
+    return Success(data=contracts).dumps()
 
 
 @web.route("/ticks")
@@ -27,7 +28,7 @@ def find_ticks():
     访问一次行情
     """
     ticks = dumps(current_app.recorder.ticks)
-    return Response(data=ticks).dumps()
+    return Success(data=ticks).dumps()
 
 
 @web.route("/orders")
@@ -38,7 +39,7 @@ def find_orders():
     :return:
     """
     orders = dumps(current_app.center.orders)
-    return Response(data=orders).dumps()
+    return Success(data=orders).dumps()
 
 
 @web.route("/active_orders")
@@ -49,7 +50,7 @@ def find_active_orders():
     :return:
     """
     orders = dumps(current_app.recorder.active_orders)
-    return Response(data=orders).dumps()
+    return Success(data=orders).dumps()
 
 
 @web.route("/send")
@@ -65,9 +66,9 @@ def cancel_web_order():
     try:
         req = CancelRequest(**request.values)
         current_app.cancel_order(req)
-        return Response("cancel ok").dumps()
+        return Success(message="cancel ok").dumps()
     except Exception as e:
-        return Response(msg=str(e)).dumps()
+        return Fail(message=str(e)).dumps()
 
 
 @web.route("/login", methods=["POST"])
@@ -76,13 +77,15 @@ def login():
     username = req.get("username")
     password = req.get("password")
     if username is None or password is None:
-        return Response(msg="请确认用户名或者密码不为空").dumps()
-    admin = Admin.query.filter(Admin.username == username, Admin.pwd == encrypt(password)).first()
+        return Fail(message="请确认用户名或者密码不为空").dumps()
+    admin = Admin.query.filter(
+        Admin.username == username, Admin.pwd == encrypt(password)
+    ).first()
     if admin:
         token = create_access_token(admin.username)
-        return Response(msg="登录成功", data={"token": token}).dumps()
+        return Success(message="登录成功", data={"token": token}).dumps()
     else:
-        return Response(msg="请确认用户存在或者密码正确").dumps()
+        return Fail(message="请确认用户存在或者密码正确").dumps()
 
 
 @web.route("/change_password", methods=["POST"])
@@ -91,15 +94,17 @@ def change_password():
     username = request.values.get("username")
     password = request.values.get("password")
     if username is None or password is None:
-        return Response(msg="请确认用户名或者密码不为空").dumps()
+        return Fail(message="请确认用户名或者密码不为空").dumps()
     admin = Admin.query.filter(Admin.username == username).first()
     if admin:
         admin.pwd = password
         model.session.add(admin)
         model.session.commit()
-        return Response(msg="登录成功", data={"token": create_access_token(admin.username)}).dumps()
+        return Success(
+            message="登录成功", data={"token": create_access_token(admin.username)}
+        ).dumps()
     else:
-        return Response(msg="请确认用户存在或者密码正确").dumps()
+        return Fail(message="请确认用户存在或者密码正确").dumps()
 
 
 @web.route("/logout")
@@ -107,4 +112,4 @@ def change_password():
 def logout():
     response = jsonify({"msg": "logout successful"})
     unset_jwt_cookies(response)
-    return Response(msg="注销成功").dumps()
+    return Success(message="注销成功").dumps()

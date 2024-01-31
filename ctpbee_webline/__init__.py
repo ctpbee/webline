@@ -1,6 +1,7 @@
 from threading import Thread
 
 from flask import Flask
+from flask_cors import CORS
 from ctpbee import Tool, dumps
 from ctpbee.constant import ToolRegisterType, TickData, AccountData, OrderData, TradeData
 from ctpbee.level import tool_register
@@ -10,6 +11,7 @@ from ctpbee_webline.ext import model, jwt, socketio
 
 def create_app():
     app = Flask(__name__)
+    CORS(app)
     app.register_blueprint(blueprint=web)
     app.config.from_pyfile("env.py")
     model.init_app(app)
