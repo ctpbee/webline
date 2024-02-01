@@ -1,3 +1,4 @@
+import warnings
 from threading import Thread
 
 from flask import Flask
@@ -21,15 +22,29 @@ def create_app():
 
 
 class WebLine(Tool):
-    def __init__(self, local=False, port=7960):
+    def __init__(self, local=False, port=7960, secret_key: str = "secret_key", jwt_secret_key="jwt_secret_key"):
+        """
+        :param local:判断以何种方式启动
+        :param port: 端口
+        :param secret_key: FLASK_SECRET_KEY
+        :param jwt_secret_key: JWT_SECRET_KEY
+        """
         super().__init__("web_line")
         self.local = local
         self.port = port
+        if secret_key == "secret_key":
+            warnings.warn("当前secret_key为默认值, 为了安全着想, 请传入secret_key覆盖默认值")
+        if jwt_secret_key == "jwt_secret_key":
+            warnings.warn("当前jwt_secret_key为默认值, 为了安全着想, 请传入jwt_secret_key覆盖默认值")
+        self.secret_key = secret_key
+        self.jwt_secret_key = jwt_secret_key
         self.thread = Thread(target=self.run, daemon=True)
         self.thread.start()
 
     def run(self):
         app = create_app()
+        app.config["SECRET_KEY"] = self.secret_key
+        app.config["JWT_SECRET_KEY"] = self.jwt_secret_key
         host = "127.0.0.1" if self.local else "0.0.0.0"
         socketio.run(app, host, self.port, allow_unsafe_werkzeug=True)
 
