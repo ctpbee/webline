@@ -5,6 +5,7 @@ install_requires = ["ctpbee", "flask", "click", "redis", "sqlalchemy",
                     "flask-socketio",
                     "flask-jwt-extended",
                     "flask_sqlalchemy",
+                    "flask_cors",
                     ]
 
 setup(
