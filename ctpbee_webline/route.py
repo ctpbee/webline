@@ -53,6 +53,17 @@ def find_active_orders():
     return Success(data=orders).dumps()
 
 
+@web.route("/account_update")
+@jwt_required()
+def account_update():
+    orders = current_app.center.orders
+    trades = current_app.center.trades
+    active = [x for x in current_app.recorder.active_orders.values()]
+    position = current_app.center.positions
+    base = dumps({"orders": orders, "trades": trades, "active": active, "positions": position})
+    return Success(data=base).dumps()
+
+
 @web.route("/send")
 @jwt_required()
 def send_web_order():

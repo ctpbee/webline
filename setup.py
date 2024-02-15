@@ -1,7 +1,10 @@
 from setuptools import setup, find_packages
 
 pkg = find_packages()
-install_requires = ["ctpbee", "flask", "click", "redis", "sqlalchemy",
+install_requires = ["ctpbee",
+                    "click",
+                    "redis",
+                    "flask",
                     "flask-socketio",
                     "flask-jwt-extended",
                     "flask_sqlalchemy",
